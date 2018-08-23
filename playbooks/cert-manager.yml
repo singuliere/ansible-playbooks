@@ -1,0 +1,7 @@
+---
+- name: Set up certificate management servers.
+  hosts: cert-manager
+  become: true
+  roles:
+    - name: common-server
+      tags: common-server
