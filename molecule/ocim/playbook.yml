@@ -1,0 +1,12 @@
+---
+- name: Set up vault ssh signers
+  hosts: vault-host
+  become: true
+
+  tasks:
+    - name: install
+      shell: |
+        sudo -u postgres createuser -d root
+        createdb --encoding utf-8 --template template0 opencraft
+        consul agent -dev >& consul.out &
+        cd /opt/ocim

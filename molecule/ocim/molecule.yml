@@ -1,0 +1,53 @@
+---
+driver:
+  name: docker
+lint:
+  name: yamllint
+platforms:
+  # docker + systemd recipe courtesy https://github.com/pilou-
+  - name: ocim-host
+    image: xenial
+    command: /sbin/init
+    security_opts: ['seccomp=unconfined']
+    tmpfs: ['/tmp', '/run', '/run/lock']
+    volumes:
+      - '/sys/fs/cgroup:/sys/fs/cgroup:ro'
+      - '/home/singuliere/software/ocim/opencraft:/opt/ocim'
+    hostname: ocim-host
+    capabilities:
+      - IPC_LOCK
+    env:
+      PG_HOST: postgres
+    published_ports:
+      - "2222:22"
+      - "2001:2001"
+      - "5000:5000"
+      - "8888:8888"
+provisioner:
+  name: ansible
+  options:
+    e: ansible_ssh_user=ubuntu
+  lint:
+    name: ansible-lint
+  env:
+    ANSIBLE_ROLES_PATH: ../../playbooks/roles
+  inventory:
+    links:
+      group_vars: group_vars
+      host_vars: host_vars
+scenario:
+  name: ocim
+  test_sequence:
+    - destroy
+    - create
+    - converge
+    - verify
+    - idempotence
+    - verify
+    - destroy
+verifier:
+  name: testinfra
+  options:
+    v: True
+  lint:
+    name: flake8
